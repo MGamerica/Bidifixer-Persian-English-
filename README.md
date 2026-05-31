@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/MGamerica/Bidifixer-Persian-English-/main/images/Picsart_26-05-30_23-39-56-111.jpg">
+</p>
+
 # Persian BidiFixer
 
 A lightweight tool for fixing mixed Persian-English text rendering issues in HTML.
@@ -10,15 +14,19 @@ When Persian and English words are mixed together in the same paragraph, browser
 
 Persian BidiFixer solves this problem automatically by detecting Persian and Latin text segments and assigning the correct text direction to each part independently.
 
-### Example
+As a result, mixed-language content is displayed correctly without visual corruption.
 
-#### Before
+---
 
-![Before](images/before.png)
+## Example
 
-#### After
+### Before
 
-![After](images/after.png)
+<img src="https://raw.githubusercontent.com/MGamerica/Bidifixer-Persian-English-/main/images/Bad.jpg">
+
+### After
+
+<img src="https://raw.githubusercontent.com/MGamerica/Bidifixer-Persian-English-/main/images/Good.jpg">
 
 ---
 
@@ -36,20 +44,20 @@ Persian BidiFixer solves this problem automatically by detecting Persian and Lat
 
 ## How To Use
 
-1. Paste your Persian-English mixed text.
-2. The tool generates a corrected preview.
+1. Paste your Persian-English mixed text into the input field.
+2. The tool automatically generates a corrected preview.
 3. Click **Copy Code**.
 4. Paste the generated HTML into your website.
 
-### Interface
+### User Interface
 
-![Interface](images/interface.png)
+<img src="https://raw.githubusercontent.com/MGamerica/Bidifixer-Persian-English-/main/images/Ui%20preview.jpg">
 
 ---
 
-## Live Demo
+## Tool
 
-https://your-link-here.github.io/Persian-BidiFixer/
+[Open BidiFixer Tool](https://github.com/MGamerica/Bidifixer-Persian-English-/blob/main/Tool/Bidifixer.html)
 
 ---
 
@@ -57,33 +65,17 @@ https://your-link-here.github.io/Persian-BidiFixer/
 
 ### Recommended Usage
 
-This tool is primarily intended for Persian pages where English words, URLs, variables, commands, or technical terms appear occasionally inside Persian content.
+This tool is primarily designed for Persian pages where English words, URLs, commands, variables, technical terms, or short English phrases appear inside Persian content.
 
 ### Generated Output
 
-The output is a self-contained HTML snippet that includes:
+The generated output is a self-contained HTML snippet that includes:
 
 - Processed content
 - Required styles
 - Correct bidirectional rendering
 
 Simply paste the generated code where the text should appear.
-
----
-
-## License
-
-This software is available free of charge.
-
-You may:
-
-- Use it for personal projects
-- Modify it
-- Use it in open-source projects
-
-Commercial use, redistribution for sale, repackaging, or offering this tool as a paid service requires prior written permission from the author.
-
-For commercial licensing inquiries, please contact the developer.
 
 ---
 
