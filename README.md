@@ -57,7 +57,7 @@ As a result, mixed-language content is displayed correctly without visual corrup
 
 ## Tool
 
-[Open BidiFixer Tool](https://github.com/MGamerica/Bidifixer-Persian-English-/blob/main/Tool/Bidifixer.html)
+[Open BidiFixer Tool](https://mgamerica.github.io/Bidifixer-Persian-English-/)
 
 ---
 
