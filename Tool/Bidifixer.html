@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Persian BidiFixer</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#121212; /* مشکی نرم */
+    padding:30px;
+    max-width:900px;
+    margin:auto;
+    color:#e6e6e6;
+    animation:fadeIn 0.6s ease-in-out;
+}
+
+/* عنوان */
+h1{
+    text-align:center;
+    margin-bottom:25px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    color:#f0f0f0;
+}
+
+/* textarea */
+textarea{
+    width:100%;
+    min-height:180px;
+    padding:15px;
+    font-size:16px;
+    background:#1a1a1a;
+    color:#eaeaea;
+    border:1px solid #d0d0d0;
+    border-radius:15px;
+    resize:vertical;
+    box-sizing:border-box;
+    outline:none;
+    transition:all 0.25s ease;
+    direction: rtl;
+}
+
+textarea:focus{
+    border-color:#ffffffaa;
+    box-shadow:0 0 0 2px rgba(255,255,255,0.08);
+}
+
+/* خروجی */
+#displayDiv{
+    margin-top:20px;
+    border:1px solid #d0d0d0;
+    background:#161616;
+    padding:15px;
+    border-radius:15px;
+    min-height:120px;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    line-height:1.8;
+    transition:all 0.3s ease;
+}
+
+/* bidi spans */
+span.bidi-block{
+    unicode-bidi:isolate;
+    direction:ltr;
+    display:inline-block;
+}
+
+/* دکمه‌ها */
+button{
+    margin-top:15px;
+    padding:10px 18px;
+    border:1px solid #cfcfcf;
+    border-radius:15px;
+    cursor:pointer;
+    font-size:15px;
+    background:#1b1b1b;
+    color:#f0f0f0;
+    transition:all 0.2s ease;
+}
+
+button:hover{
+    transform:translateY(-1px);
+    border-color:#ffffffaa;
+    background:#222;
+}
+
+/* دکمه کپی */
+.copy-btn{
+    background:#202020;
+}
+
+/* help button بهتر و جدا از عنوان */
+.help-btn{
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:#1a1a1a;
+    border:1px solid #cfcfcf;
+    color:#f0f0f0;
+    z-index:1000;
+    
+}
+
+/* popup */
+#helpPopup{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+    backdrop-filter:blur(6px);
+    animation:fadeIn 0.25s ease;
+}
+
+/* box */
+.popup-box{
+    background:#181818;
+    padding:25px;
+    border-radius:15px;
+    width:75%;
+    border:1px solid #d0d0d0;
+    animation:scaleIn 0.25s ease;
+}
+
+.popup-box h3{
+    margin-top:0;
+    color:#f2f2f2;
+}
+
+.popup-box button{
+    background:#1b1b1b;
+    color:#f0f0f0;
+    border:1px solid #cfcfcf;
+}
+
+/* انیمیشن‌ها */
+@keyframes fadeIn{
+    from{opacity:0}
+    to{opacity:1}
+}
+
+@keyframes scaleIn{
+    from{transform:scale(0.95); opacity:0}
+    to{transform:scale(1); opacity:1}
+}
+</style>
+</head>
+<body>
+
+<button class="help-btn" onclick="openHelp()">
+Help
+</button>
+    <br>
+    <br> 
+<h1>Persian BidiFixer</h1>
+
+<textarea
+    id="inputText"
+    placeholder="Paste your Persian-English mixed text here..."
+></textarea>
+
+<div id="displayDiv"></div>
+
+<button
+    class="copy-btn"
+    onclick="copyGeneratedCode()"
+>
+Copy Code
+</button>
+
+<div id="helpPopup">
+    <div class="popup-box">
+        <h3>How to use</h3>
+        <p>
+            Paste your Persian-English mixed text.
+            The corrected output appears below.
+            Click "Copy Code" and paste it into your website.
+            The embedded script will preserve correct bidi rendering.
+        </p>
+
+        <button onclick="closeHelp()">
+            Close
+        </button>
+    </div>
+</div>
+
+<script>
+const inputText=document.getElementById('inputText');
+const displayDiv=document.getElementById('displayDiv');
+
+function openHelp(){
+    document.getElementById('helpPopup').style.display='flex';
+}
+
+function closeHelp(){
+    document.getElementById('helpPopup').style.display='none';
+}
+
+function getCharType(char){
+    const code=char.charCodeAt(0);
+
+    if(code===0x200F||code===0x200E)
+        return 'space';
+
+    if(/[آ-یء-ي«»]/.test(char))
+        return 'persian';
+
+    if(/[۰-۹]/.test(char))
+        return 'persianDigit';
+
+    if(/[A-Za-z]/.test(char))
+        return 'latin';
+
+    if(/[0-9]/.test(char))
+        return 'latinDigit';
+
+    if(/\s/.test(char))
+        return 'space';
+
+    if(char==='\n')
+        return 'newline';
+
+    return 'symbol';
+}
+
+function reverseBracket(char){
+    const bracketMap={
+        '(':')',
+        ')':'(',
+        '[':']',
+        ']':'[',
+        '{':'}',
+        '}':'{'
+    };
+
+    return bracketMap[char]||char;
+}
+
+function preprocessPairedSymbols(text){
+    let result='';
+
+    const openBrackets=['(','[','{'];
+    const closeBrackets=[')',']','}'];
+    const allBrackets=[...openBrackets,...closeBrackets];
+
+    for(let i=0;i<text.length;i++){
+        const char=text[i];
+
+        if(allBrackets.includes(char)){
+            let hasPersianAfter=false;
+            let j=i+1;
+
+            while(j<text.length&&/\s/.test(text[j])){
+                j++;
+            }
+
+            if(
+                j<text.length &&
+                (
+                    /[آ-یء-ي«»]/.test(text[j]) ||
+                    /[۰-۹]/.test(text[j])
+                )
+            ){
+                hasPersianAfter=true;
+            }
+
+            if(openBrackets.includes(char)&&hasPersianAfter){
+                result+=reverseBracket(char);
+            }else{
+                result+=char;
+            }
+        }else{
+            result+=char;
+        }
+    }
+
+    return result;
+}
+
+function smartBidiFixer(node){
+    node.dir='rtl';
+
+    node.childNodes.forEach(child=>{
+
+        if(child.nodeType===3){
+            let text=child.nodeValue;
+
+            if(!text.trim()) return;
+
+            text=preprocessPairedSymbols(text);
+
+            const lines=text.split('\n');
+            const fragment=document.createDocumentFragment();
+
+            lines.forEach((line,lineIndex)=>{
+
+                const chars=line.split('').map(char=>({
+                    char,
+                    type:getCharType(char)
+                }));
+
+                const blocks=[];
+                let i=0;
+
+                while(i<chars.length){
+
+                    const ct=chars[i].type;
+                    let buffer='';
+
+                    if(
+                        ct==='persian' ||
+                        ct==='persianDigit'
+                    ){
+                        while(
+                            i<chars.length &&
+                            (
+                                chars[i].type==='persian' ||
+                                chars[i].type==='persianDigit' ||
+                                (
+                                    chars[i].type==='symbol' &&
+                                    (
+                                        i===0 ||
+                                        chars[i-1].type!=='space'
+                                    )
+                                )
+                            )
+                        ){
+                            buffer+=chars[i++].char;
+                        }
+
+                        blocks.push({
+                            text:buffer,
+                            dir:'rtl'
+                        });
+                    }
+
+                    else if(
+                        ct==='latin' ||
+                        ct==='latinDigit' ||
+                        ct==='symbol'
+                    ){
+                        let startIdx=i;
+
+                        while(
+                            startIdx>0 &&
+                            chars[startIdx-1].type==='symbol' &&
+                            (
+                                startIdx-1===0 ||
+                                chars[startIdx-2].type!=='space'
+                            )
+                        ){
+                            startIdx--;
+                        }
+
+                        i=startIdx;
+
+                        while(i<chars.length){
+
+                            const ctype=chars[i].type;
+
+                            if(
+                                ctype==='persian' ||
+                                ctype==='persianDigit'
+                            ){
+                                break;
+                            }
+
+                            if(
+                                ctype==='latin' ||
+                                ctype==='latinDigit' ||
+                                ctype==='symbol'
+                            ){
+                                buffer+=chars[i].char;
+                                i++;
+                                continue;
+                            }
+
+                            if(ctype==='space'){
+                                let k=i+1;
+
+                                while(
+                                    k<chars.length &&
+                                    chars[k].type==='space'
+                                ){
+                                    k++;
+                                }
+
+                                if(
+                                    k<chars.length &&
+                                    (
+                                        chars[k].type==='latin' ||
+                                        chars[k].type==='latinDigit' ||
+                                        chars[k].type==='symbol'
+                                    )
+                                ){
+                                    buffer+=chars[i].char;
+                                    i++;
+                                    continue;
+                                }
+
+                                break;
+                            }
+
+                            break;
+                        }
+
+                        if(buffer){
+                            blocks.push({
+                                text:buffer,
+                                dir:'ltr'
+                            });
+                        }
+                    }
+
+                    else if(ct==='space'){
+                        while(
+                            i<chars.length &&
+                            chars[i].type==='space'
+                        ){
+                            buffer+=chars[i++].char;
+                        }
+
+                        blocks.push({
+                            text:buffer,
+                            dir:null
+                        });
+                    }
+
+                    else{
+                        buffer+=chars[i++].char;
+
+                        blocks.push({
+                            text:buffer,
+                            dir:'rtl'
+                        });
+                    }
+                }
+
+                blocks.forEach(block=>{
+                    if(block.dir==='ltr'){
+                        const span=document.createElement('span');
+                        span.className='bidi-block';
+                        span.textContent=block.text;
+                        fragment.appendChild(span);
+                    }else{
+                        fragment.appendChild(
+                            document.createTextNode(block.text)
+                        );
+                    }
+                });
+
+                if(lineIndex<lines.length-1){
+                    fragment.appendChild(
+                        document.createElement('br')
+                    );
+                }
+            });
+
+            child.parentNode.insertBefore(
+                fragment,
+                child
+            );
+
+            child.remove();
+        }
+
+        else if(child.nodeType===1){
+            smartBidiFixer(child);
+        }
+    });
+}
+
+function debounce(func,delay){
+    let timeout;
+
+    return function(...args){
+        clearTimeout(timeout);
+
+        timeout=setTimeout(
+            ()=>func.apply(this,args),
+            delay
+        );
+    };
+}
+
+function renderText(){
+    displayDiv.innerHTML='';
+
+    const text=inputText.value;
+
+    if(text.trim()!==''){
+        const p=document.createElement('p');
+        p.textContent=text;
+
+        displayDiv.appendChild(p);
+
+        smartBidiFixer(displayDiv);
+    }
+}
+
+function copyGeneratedCode(){
+
+const content=displayDiv.innerHTML;
+
+const code=`<div id="persian-bidifixer-output">
+${content}
+</div>
+
+<style>
+#persian-bidifixer-output{
+direction:rtl;
+line-height:1.8;
+white-space:pre-wrap;
+}
+#persian-bidifixer-output .bidi-block{
+unicode-bidi:isolate;
+direction:ltr;
+display:inline-block;
+}
+</style>`;
+
+navigator.clipboard.writeText(code);
+
+alert('Code copied successfully.');
+}
+
+inputText.addEventListener(
+    'input',
+    debounce(renderText,300)
+);
+
+renderText();
+</script>
+
+</body>
+</html>
