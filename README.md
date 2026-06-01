@@ -48,53 +48,61 @@ There are **two different usage modes** depending on your needs:
 
 ---
 
-# 1) Copy-Paste Tool (No installation required)
+## Mode 1 — Copy-Paste Tool (No installation required)
 
-This mode is for users who want to generate corrected HTML output quickly.
+> Best for: quick use, non-developers, one-time conversions
 
-### Steps:
+**Steps:**
 
-1. Paste your Persian-English mixed text into the input field.
-2. The tool automatically generates a corrected preview.
-3. Click **Copy Code**.
-4. Paste the generated HTML into your website.
+1. Open the tool → [BidiFixer Tool](https://mgamerica.github.io/Bidifixer-Persian-English-/)
+2. Paste your Persian-English mixed text into the input field
+3. The tool automatically generates a corrected preview
+4. Click **Copy Code**
+5. Paste the generated HTML snippet into your website
 
-### Output Type
+**What you get:**
 
-The output is a **self-contained HTML snippet** including:
+The output is a self-contained HTML snippet that includes:
 - Processed content
 - Required styles
 - Correct bidirectional rendering
 
-You do NOT need to include any JS file in this mode.
+> ✅ No JS file needed — just copy and paste.
 
 ---
 
-# 2) JavaScript Library (For Developers / Websites)
+## Mode 2 — JavaScript Library (For Developers)
 
-This mode is for developers who want to use BidiFixer directly in their website.
+> Best for: websites, ongoing use, automatic processing
 
-### Option A: Local file usage
+Include the script once and all your content is fixed automatically.
 
-Download and include the script:
+### Option A — Local File
+
+Download `Bidifixer.js` and include it in your project:
 
 ```html
 <script src="Bidifixer.js"></script>
 <script>
-BidiFixer.observe();
+  BidiFixer.observe();
 </script>
-
 ```
 
-## Option B: GitHub raw file usage
+### Option B — Direct from GitHub (CDN-style)
+
+No download needed — load straight from the repository:
 
 ```html
-<script src="https://github.com/MGamerica/Bidifixer-Persian-English-/blob/main/Tool/Bidifixer.js"></script>
+<script src="https://raw.githubusercontent.com/MGamerica/Bidifixer-Persian-English-/main/Tool/Bidifixer.js"></script>
 <script>
-BidiFixer.scan();
+  BidiFixer.scan();
 </script>
-
 ```
+
+> ⚠️ `observe()` watches for dynamic content changes. Use `scan()` for static pages.
+
+---
+
 ## Recommended Usage Mode
 
 This tool is primarily designed for:
@@ -110,6 +118,7 @@ This tool is primarily designed for:
 
 👉 [Open BidiFixer Tool](https://mgamerica.github.io/Bidifixer-Persian-English-/)
 
+---
 
 ## Important Notes
 
@@ -123,11 +132,17 @@ The generated output is a self-contained HTML snippet that includes:
 
 Simply paste the generated code where the text should appear.
 
+---
+
 ## Support The Project
 
 If this project helps you, you can support its development with TON Coin:
 
+```
 UQDZ73HIw043fVFpqc8mgGPilzgfHb9Uqypxn7nEKqeRu5Gz
+```
+
+---
 
 ## Developer
 
